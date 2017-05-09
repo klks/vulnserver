@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://peachfuzzer.com/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://peachfuzzer.com/2012/Peach ../peach.xsd">
+
+	<!--
+		
+	Example of the Network monitor.  This example requires two machines.
+		
+	The included example program will fault on test 47.
+		
+	Configure:
+		
+		Change 192.168.1.195 to IP of second machine.
+		
+	Syntax:
+		
+		2nd machine: peach -a tcp
+		1st machine: peach samples\Debugger.xml
+		
+	Output:
+		
+		You will see the tests scroll along.  Once test 47 has occured you can check
+		the "Logs" folder for a log of this test that will include a Debugger.txt
+		and Network.pcap faul output.
+		
+	Authors:
+		
+		Michael Eddington (mike@dejavusecurity.com)
+		
+	-->
+
+	<DataModel name="DM_CMD">
+		<String value="##CMD## " mutable="false" token="true"/>
+		<String value=""/>
+		<String value="\r\n" mutable="false" token="true"/>
+	</DataModel>
+
+	<DataModel name="DataResponse">
+    	<String value=""/>
+  	</DataModel>
+
+	<StateModel name="State" initialState="Initial">
+		<State name="Initial">
+			<Action type="open"/>
+			<Action type="input"><DataModel ref="DataResponse"/></Action>
+			<Action type="output"><DataModel ref="DM_CMD" /></Action>
+			<Action type="input" ><DataModel ref="DataResponse"/></Action>
+		</State>
+	</StateModel>
+
+	<!-- Agents that run localy will be started automatically by Peach -->
+	<Agent name="LocalAgent">
+		<Monitor name="Debugger" class="WindowsDebugger">
+			<Param name="WinDbgPath" value="C:\Program Files\Windows Kits\10\Debuggers\x86" />
+			<Param name="CommandLine" value="C:\Users\OSCE\Desktop\Prep\vulnserver\vulnserver.exe"/>
+		</Monitor>
+	</Agent>
+
+	<Test name="Default">
+		<Agent ref="LocalAgent" />
+		<StateModel ref="State"/>
+		<Publisher class="Tcp">
+			<Param name="Host" value="127.0.0.1" />
+			<Param name="Port" value="9999" />
+		</Publisher>
+		<Logger class="Filesystem">
+			<Param name="Path" value="C:\Users\OSCE\Desktop\Prep\vulnserver\Logs\Test##CMD##" />
+		</Logger>
+	</Test>
+
+</Peach>
+<!-- end -->
